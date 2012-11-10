@@ -18,4 +18,5 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
 
   gem.add_dependency 'chef-workflow-tasklib'
+  gem.add_dependency 'minitest'
 end
