@@ -4,3 +4,4 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'chef-workflow-tasklib', :path => '~/repos/ht/chef-workflow-tasklib'
+gem 'vagrant-dsl', :path => '~/repos/ht/vagrant-dsl'
