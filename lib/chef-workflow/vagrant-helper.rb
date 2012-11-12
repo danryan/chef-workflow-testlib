@@ -1,8 +1,12 @@
 require 'vagrant/dsl'
 require 'chef-workflow/vagrant-support'
 require 'chef-workflow/ip-support'
+require 'chef-workflow/knife-helper'
 
-class << eval("self", TOPLEVEL_BINDING)
+module VagrantHelper
+  include Vagrant::DSL
+  include KnifeHelper
+
   def vagrant_build_role(role_name, number_of_machines=1)
     IPSupport.singleton.seed_vagrant_ips
     prison = vagrant_prison do
@@ -17,13 +21,17 @@ class << eval("self", TOPLEVEL_BINDING)
           end
         end
       end
-
-      p @config.dir
-
-      vagrant "up"
+      
+      vagrant_up
     end
 
     VagrantSupport.singleton.write_prison(role_name, prison)
     return prison, IPSupport.singleton.get_role_ips(role_name)
+  end
+
+  def vagrant_bootstrap(role_name, number_of_machines=1)
+    prison, ips = vagrant_build_role(role_name, number_of_machines)
+    knife_bootstrap_role(role_name)
+    return prison, ips
   end
 end

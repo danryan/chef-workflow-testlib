@@ -2,15 +2,12 @@ require 'knife/dsl'
 require 'chef-workflow/knife-support'
 require 'chef-workflow/ip-support'
 
-# we patch Object here because we can't be as certain how these tools will be
-# used.
-
-class Object
+module KnifeHelper
   include Chef::Knife::DSL
 
   def knife_bootstrap_role(role_name, opts=Hash.new { |h,k| h[k] = [] })
     if opts[:run_list].nil? or opts[:run_list].empty?
-      opts[:run_list] = [ "role[role_name]" ]
+      opts[:run_list] = [ "role[#{role_name}]" ]
     end
 
     if opts[:run_list].nil? or opts[:bootstrap_args].empty?
