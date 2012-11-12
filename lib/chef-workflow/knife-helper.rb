@@ -1,10 +1,12 @@
 require 'knife/dsl'
 require 'chef-workflow/knife-support'
 require 'chef-workflow/ip-support'
+require 'chef-workflow/debug-support'
 require 'thread'
 require 'stringio'
 
 module KnifeHelper
+  include DebugSupport
   include Chef::Knife::DSL
 
   # FIXME probably should just add this to knife/dsl
@@ -59,7 +61,10 @@ module KnifeHelper
     end
 
     ips = IPSupport.singleton.get_role_ips(role_name)
-    $stderr.puts "bootstrapping #{ips.count} machines with #{role_name} and run_list #{opts[:run_list].join(",")}"
+
+    if_debug do
+      $stderr.puts "bootstrapping #{ips.count} machines with #{role_name} and run_list #{opts[:run_list].join(",")}"
+    end
 
     node_names = []
 
@@ -91,7 +96,10 @@ module KnifeHelper
     # this point. So, we wait until we can see all of them which prevents a
     # whole class of false negatives in tests.
 
-    $stderr.puts "Waiting for chef to index our nodes"
+    if_debug do
+      $stderr.puts "Waiting for chef to index our nodes"
+    end
+
     run_list_item = opts[:run_list].first.dup
 
     # this dirty hack turns 'role[foo]' into 'roles:foo', but also works on
@@ -103,7 +111,9 @@ module KnifeHelper
 
     until unchecked_node_names.empty?
       name = unchecked_node_names.shift
-      #$stderr.puts "Checking search validity for node #{name}"
+      if_debug(2) do
+        $stderr.puts "Checking search validity for node #{name}"
+      end
       stdout, stderr = knife_capture :search_node, %W[#{run_list_item} AND name:#{name}]
       unless stdout =~ /1 items found/
         unchecked_node_names << name

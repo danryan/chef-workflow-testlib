@@ -1,17 +1,21 @@
 require 'vagrant/dsl'
+require 'chef-workflow/debug-support'
 require 'chef-workflow/vagrant-support'
 require 'chef-workflow/ip-support'
 require 'chef-workflow/knife-helper'
 require 'thread'
 
 module VagrantHelper
+  include DebugSupport
   include Vagrant::DSL
   include KnifeHelper
 
   def vagrant_build_role(role_name, number_of_machines=1)
     IPSupport.singleton.seed_vagrant_ips
 
-    $stderr.puts "Bringing up #{number_of_machines} machines for prison #{role_name}"
+    if_debug do
+      $stderr.puts "Bringing up #{number_of_machines} machines for prison #{role_name}"
+    end
 
     prison = vagrant_prison(:ui_class => Vagrant::UI::Silent) do
       configure do |config|
@@ -44,7 +48,10 @@ module VagrantHelper
   def vagrant_cleanup(prisons, node_names)
     prisons = [prisons] unless prisons.kind_of?(Array)
     prisons.each do |prison|
-      $stderr.puts "Cleaning up prison for role #{prison.name}"
+      if_debug do
+        $stderr.puts "Cleaning up prison for role #{prison.name}"
+      end
+      # FIXME ui_class will still be silent here, make this debuggable
       prison.cleanup
       VagrantSupport.singleton.remove_prison(prison.name)
     end
