@@ -96,8 +96,8 @@ module KnifeHelper
 
     # this dirty hack turns 'role[foo]' into 'roles:foo', but also works on
     # recipe[] too.
-    run_list_item.gsub!(/\[/, 's:')
-    run_list_item.gsub!(/\]/, '')
+    run_list_item.gsub!(/\[/, 's:"')
+    run_list_item.gsub!(/\]/, '"')
 
     unchecked_node_names = node_names.dup
 
