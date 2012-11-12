@@ -86,6 +86,30 @@ module KnifeHelper
       threads.map(&:join)
     end
 
+    # chef's solr/couch EC really screws us here. even though the nodes are
+    # bootstrapped, there's no guarantee they'll be available for querying at
+    # this point. So, we wait until we can see all of them which prevents a
+    # whole class of false negatives in tests.
+
+    $stderr.puts "Waiting for chef to index our nodes"
+    run_list_item = opts[:run_list].first.dup
+
+    # this dirty hack turns 'role[foo]' into 'roles:foo', but also works on
+    # recipe[] too.
+    run_list_item.gsub!(/\[/, 's:')
+    run_list_item.gsub!(/\]/, '')
+
+    unchecked_node_names = node_names.dup
+
+    until unchecked_node_names.empty?
+      name = unchecked_node_names.shift
+      #$stderr.puts "Checking search validity for node #{name}"
+      stdout, stderr = knife_capture :search_node, %W[#{run_list_item} AND name:#{name}]
+      unless stdout =~ /1 items found/
+        unchecked_node_names << name
+      end
+    end
+
     node_names
   end
   
