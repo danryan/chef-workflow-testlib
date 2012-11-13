@@ -8,8 +8,8 @@ Gem::Specification.new do |gem|
   gem.version       = Chef::Workflow::Testlib::VERSION
   gem.authors       = ["Erik Hollensbe"]
   gem.email         = ["erik+github@hollensbe.org"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = %q{Test helpers and assertions for chef-workflow}
+  gem.summary       = %q{Test helpers and assertions for chef-workflow}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($/)
