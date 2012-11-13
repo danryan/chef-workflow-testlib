@@ -10,7 +10,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["erik+github@hollensbe.org"]
   gem.description   = %q{Test helpers and assertions for chef-workflow}
   gem.summary       = %q{Test helpers and assertions for chef-workflow}
-  gem.homepage      = ""
+  gem.homepage      = "https://github.com/hoteltonight/chef-workflow-testlib"
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
