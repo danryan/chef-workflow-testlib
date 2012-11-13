@@ -1,10 +1,8 @@
-require 'chef-workflow/knife-helper'
-require 'chef-workflow/vagrant-helper'
 require 'chef-workflow/minitest-helper'
+require 'chef-workflow/test-case/vagrant'
 require 'minitest/unit'
 
 class MiniTest::Unit::TestCase
-  include VagrantHelper
   include MiniTest::Assertions::RemoteChef
 end
 
