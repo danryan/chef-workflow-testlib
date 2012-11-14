@@ -17,6 +17,8 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
 
-  gem.add_dependency 'chef-workflow-tasklib'
+  gem.add_dependency 'chef-workflow'
   gem.add_dependency 'minitest'
+  gem.add_dependency 'knife-dsl'
+  gem.add_dependency 'vagrant-dsl'
 end
