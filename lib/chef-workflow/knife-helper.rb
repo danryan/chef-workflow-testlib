@@ -68,7 +68,7 @@ module KnifeHelper
 
     node_names = []
 
-    knife_mute do
+    run_bootstrap = lambda do
       mut = Mutex.new
       threads = []
 
@@ -90,6 +90,8 @@ module KnifeHelper
 
       threads.map(&:join)
     end
+
+    if_debug(1, lambda { knife_mute(&run_bootstrap) }, &run_bootstrap)
 
     # chef's solr/couch EC really screws us here. even though the nodes are
     # bootstrapped, there's no guarantee they'll be available for querying at
