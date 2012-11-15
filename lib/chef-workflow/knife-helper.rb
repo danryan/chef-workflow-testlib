@@ -47,7 +47,7 @@ module KnifeHelper
     Object.const_set("STDOUT", stdout)
     Object.const_set("STDIN", stdin)
     $VERBOSE = warn
-    null.close
+    null.close rescue nil
   end
 
   def knife_bootstrap_role(role_name, opts=Hash.new { |h,k| h[k] = [] })
