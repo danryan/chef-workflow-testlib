@@ -69,6 +69,7 @@ module KnifeHelper
     node_names = []
 
     run_bootstrap = lambda do
+      Chef::Config.from_file(ENV["CHEF_CONFIG"]) # FIXME this is a stupid thing to do here
       mut = Mutex.new
       threads = []
 
@@ -78,9 +79,22 @@ module KnifeHelper
 
           warn = $VERBOSE
           $VERBOSE = nil
-          status = knife :bootstrap, %W[-N #{node_name} -r '#{opts[:run_list].join(",")}'] + opts[:bootstrap_args] + [ip]
+          # knife bootstrap is the honey badger when it comes to exit status.
+          # We can't rely on it, so we examine the run_list of the node instead
+          # to ensure it converged.
+          knife :bootstrap, %W[-N #{node_name} -r '#{opts[:run_list].join(",")}'] + opts[:bootstrap_args] + [ip]
+          run_list_size = Chef::Node.load(node_name).run_list.to_a.size
+
+          # cleanup.
+          # FIXME refactor this crap
+          unless run_list_size > 0
+            #knife %W[node delete #{node_name} -y]
+            #knife %W[client delete #{node_name} -y]
+            $VERBOSE = warn 
+            raise "Trouble bootstrapping #{node_name}/#{ip}"
+          end
+
           $VERBOSE = warn 
-          raise "Trouble bootstrapping #{node_name}/#{ip}" unless status == 0
 
           mut.synchronize do
             node_names << node_name
@@ -120,6 +134,9 @@ module KnifeHelper
       unless stdout =~ /1 items found/
         unchecked_node_names << name
       end
+      # unfortunately if this isn't here you might as well issue kill -9 to the
+      # rake process
+      sleep 0.3
     end
 
     node_names

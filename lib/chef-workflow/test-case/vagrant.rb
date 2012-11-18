@@ -37,8 +37,6 @@ class MiniTest::Unit::VagrantTestCase < MiniTest::Unit::TestCase
   def setup
     super
 
-    at_exit { teardown }
-
     unless respond_to?(:configure_prison)
       raise "configure_prison must be defined in this test suite."
     end
@@ -93,10 +91,10 @@ class MiniTest::Unit::VagrantTestCase < MiniTest::Unit::TestCase
   def teardown
     super
 
-    role_order.reverse.each do |key|
-      if @bootstrap_details[key]
-        vagrant_cleanup(@bootstrap_details[key][:prison], @bootstrap_details[key][:node_names])
-      end
-    end
+    #role_order.reverse.each do |key|
+      #if @bootstrap_details[key]
+        #vagrant_cleanup(@bootstrap_details[key][:prison], @bootstrap_details[key][:node_names])
+      #end
+    #end
   end
 end

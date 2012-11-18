@@ -17,7 +17,7 @@ module VagrantHelper
       $stderr.puts "Bringing up #{number_of_machines} machines for prison #{role_name}"
     end
 
-    prison = vagrant_prison(:ui_class => Vagrant::UI::Silent) do
+    prison = vagrant_prison(:auto_destroy => false, :ui_class => Vagrant::UI::Silent) do
       configure do |config|
         config.vm.box_url = VagrantSupport.singleton.box_url
         config.vm.box = VagrantSupport.singleton.box
