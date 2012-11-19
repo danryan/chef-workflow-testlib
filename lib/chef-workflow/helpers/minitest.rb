@@ -1,4 +1,4 @@
-require 'chef-workflow/chef-helper'
+require 'chef-workflow/helpers/chef'
 require 'minitest/unit'
 
 module MiniTest::Assertions::RemoteChef
