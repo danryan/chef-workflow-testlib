@@ -36,4 +36,8 @@ class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
     self.class.provision_helper.provision(role, number_of_servers, @@dependencies.map(&:first) + addl_dependencies)
     self.class.provision_helper.run
   end
+
+  def deprovision(role)
+    self.class.provision_helper.deprovision(role)
+  end
 end

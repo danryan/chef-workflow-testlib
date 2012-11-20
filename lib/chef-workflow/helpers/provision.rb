@@ -6,6 +6,10 @@ class ProvisionHelper
   def schedule_provision(*args)
     $SCHEDULER.schedule_provision(*args)
   end
+
+  def deprovision(group_name)
+    $SCHEDULER.deprovision_group(group_name)
+  end
   
   def wait_for(*args)
     $SCHEDULER.wait_for(*args)
