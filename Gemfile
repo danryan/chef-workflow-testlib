@@ -4,6 +4,5 @@ source 'https://rubygems.org'
 gemspec
 
 if ENV["ERIKH_LOCAL"]
-  gem 'chef-workflow-tasklib', :path => '~/repos/ht/chef-workflow-tasklib'
-  gem 'vagrant-dsl', :path => '~/repos/ht/vagrant-dsl'
+  gem 'chef-workflow', :path => '~/repos/ht/chef-workflow'
 end

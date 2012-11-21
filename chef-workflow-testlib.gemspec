@@ -19,7 +19,8 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency 'chef-workflow'
   gem.add_dependency 'minitest'
-  gem.add_dependency 'knife-dsl'
-  gem.add_dependency 'vagrant-dsl'
   gem.add_dependency 'net-ssh'
+
+  gem.add_development_dependency 'rdoc'
+  gem.add_development_dependency 'rake'
 end
