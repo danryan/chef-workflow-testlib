@@ -34,6 +34,12 @@ class VagrantProvisionHelper < ProvisionHelper
 
     schedule_provision(group_name, [VM::VagrantProvisioner.new(prison, ips), kp], dependencies)
   end
+
+  # FIXME this is not the place to do this, move it for EC2 support
+  def deprovision(group_name)
+    super
+    IPSupport.singleton.delete_role(group_name)
+  end
 end
 
 class MiniTest::Unit::VagrantTestCase < MiniTest::Unit::ProvisionedTestCase
