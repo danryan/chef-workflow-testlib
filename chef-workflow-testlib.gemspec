@@ -21,4 +21,5 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'minitest'
   gem.add_dependency 'knife-dsl'
   gem.add_dependency 'vagrant-dsl'
+  gem.add_dependency 'net-ssh'
 end

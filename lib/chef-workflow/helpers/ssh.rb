@@ -1,8 +1,7 @@
 require 'chef-workflow/support/ip'
 require 'chef-workflow/support/knife'
 require 'chef-workflow/support/debug'
-require 'chef/application/knife'
-require 'chef/knife/ssh'
+require 'net/ssh'
 
 module SSHHelper
   include KnifePluginSupport
@@ -21,28 +20,35 @@ module SSHHelper
   end
 
   def ssh_command(ip, command)
-    args = %W['#{ip}' '#{KnifeSupport.singleton.use_sudo ? 'sudo ': ''}#{command}' -m]
+    command = "#{KnifeSupport.singleton.use_sudo ? 'sudo ': ''}#{command}"
 
-    args += %W[-x '#{KnifeSupport.singleton.ssh_user}']       if KnifeSupport.singleton.ssh_user
-    args += %W[-P '#{KnifeSupport.singleton.ssh_password}']   if KnifeSupport.singleton.ssh_password
-    args += %W[-i '#{KnifeSupport.singleton.ssh_identity_file}']  if KnifeSupport.singleton.ssh_identity_file
+    options = { }
 
-    $stderr.puts args.inspect
+    options[:password] = KnifeSupport.singleton.ssh_password          if KnifeSupport.singleton.ssh_password
+    options[:keys]     = [KnifeSupport.singleton.ssh_identity_file]   if KnifeSupport.singleton.ssh_identity_file
 
-    cli = init_knife_plugin(Chef::Knife::Ssh, args)
-    status = cli.run
+    Net::SSH.start(ip, KnifeSupport.singleton.ssh_user, options) do |ssh|
+      ssh.open_channel do |ch|
+        ch.on_open_failed do |ch, code, desc|
+          raise "Connection Error to #{ip}: #{desc}"
+        end
 
-    if status == 0
-      if_debug do
-        puts cli.ui.stdout.string
-        puts cli.ui.stderr.string
+        ch.exec(command) do |ch, success|
+          return 1 unless success
+
+          if_debug(2) do
+            ch.on_data do |ch, data|
+              $stderr.puts data
+            end
+          end
+
+          ch.on_request("exit-status") do |ch, data|
+            return data.read_long
+          end
+        end
       end
 
-      return true
+      ssh.loop
     end
-
-    puts cli.ui.stdout.string
-    puts cli.ui.stderr.string
-    raise "SSH command failed for ip #{ip}, command #{command}"
   end
 end
