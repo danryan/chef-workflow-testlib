@@ -5,6 +5,11 @@ require 'tempfile'
 require 'chef-workflow/test-case/provisioned'
 require 'chef-workflow/helpers/provision'
 
+#
+# Subclass of ProvisionHelper, centered around Vagrant. Pulls some
+# configuration from KnifeSupport and then drives VM::VagrantProvisioner and
+# VM::KnifeProvisioner.
+#
 class VagrantProvisionHelper < ProvisionHelper
   def provision(group_name, number_of_servers=1, dependencies=[])
     self.serial = true
@@ -27,6 +32,9 @@ class VagrantProvisionHelper < ProvisionHelper
   end
 end
 
+#
+# ProvisionedTestCase that uses VagrantProvisionHelper.
+#
 class MiniTest::Unit::VagrantTestCase < MiniTest::Unit::ProvisionedTestCase
   self.provision_helper = VagrantProvisionHelper.new
 end

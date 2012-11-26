@@ -3,10 +3,18 @@ require 'chef-workflow/support/knife'
 require 'chef-workflow/support/debug'
 require 'net/ssh'
 
+#
+# Helper for performing SSH on groups of servers. Intended to be mixed into test case classes.
+#
 module SSHHelper
   include KnifePluginSupport
   include DebugSupport
 
+  #
+  # run a command against a group of servers. These commands are run in
+  # parallel, but the command itself does not complete until all the threads
+  # have finished running.
+  #
   def ssh_role_command(role, command)
     t = []
     IPSupport.singleton.get_role_ips(role).each do |ip|
@@ -19,6 +27,10 @@ module SSHHelper
     t.each(&:join)
   end
 
+  #
+  # Run a command against a single IP. Makes heavy use of KnifeSupport to
+  # determine how to drive the command.
+  #
   def ssh_command(ip, command)
     command = "#{KnifeSupport.singleton.use_sudo ? 'sudo ': ''}#{command}"
 

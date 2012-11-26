@@ -2,6 +2,13 @@ require 'chef-workflow/support/scheduler'
 
 $SCHEDULER ||= Scheduler.new
 
+#
+# Helper for provisioning. Intended to be instanced and assigned to the
+# provision_helper attribute of a ProvisionedTestCase.
+#
+# All methods except `provision`, which is shorthand, are passed directly to
+# the scheduler.
+#
 class ProvisionHelper
   def schedule_provision(*args)
     $SCHEDULER.schedule_provision(*args)
