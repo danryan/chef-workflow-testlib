@@ -166,8 +166,8 @@ enough to walk past those dependencies in the first chef run, once they're both
 up converging them again will resolve each other and configure them
 appropriately.
 
-The next bit I hope to make a little easier to use in the near future, but
-here's the gory details:
+**The next bit I hope to make a little easier to use in the near future, but
+here's the gory details**:
 
 `@@dependencies` is a small structure which is intended to be appended to, and
 describes in each array a call to `provision`. Consequently, the role, number
@@ -209,7 +209,90 @@ for the next test case.
 
 ### Dependency-based Provisioning
 
-FIXME finish
+All provisions have a dependency list. Until they are satisfied, the stated
+provision will not happen. This is mostly noticable in threaded provisioning
+mode where multiple provisions can occur at once.
+
+To wait for a specific machine to provision before continuing the test process,
+use the `wait_for` method.
+
+We can see this in our example above:
+
+```ruby
+  def setup
+    provision('bind_slave', 1, %w[bind_master syslog_server])
+    wait_for('bind_slave')
+  end
+```
+
+In this instance, a `bind_slave` provision is scheduled, which depends on the
+`bind_master` and `syslog_server` provisions. The `wait_for` statement is used
+to control the test flow, so that it does not continue before `bind_slave`
+provisions, which is what we want to actually test in this test case. Properly
+used, this can enhance provisioning times by letting the scheduler provision
+things as soon as they are capable of being provisioned, where you just care
+about the servers you wish to test at any given point, instead of having to
+manage this problem yourself.
+
+You can't declare provisions that are dependent on provisions that don't exist
+-- this will raise an exception. So, don't worry about fat-fingering it. :)
+
+Here's a more advanced example that abuses the performance gains of the
+scheduler. In this instance, we instend to test our monitoring system, which
+will assert the "alive" status of many servers. We provision numerous ones in
+the setup, and only wait for what we care about in each unit test.
+
+```ruby
+class TestNagios < MiniTest::Unit::VagrantTestCase
+  def setup
+    provision('syslog_server')
+    provision('bind_master', 1, %w[syslog_server])
+    # we just care about bind for all these
+    provision('bind_slave', 1, %w[bind_master])
+    provision('web_server', 1, %w[bind_master])
+    provision('db_server', 1, %w[bind_master])
+    provision('nagios_server', 1, %w[bind_master])
+    # we need the nagios server available for all tests, so wait for that
+    wait_for('nagios_server')
+  end
+
+  def test_dns_monitoring
+    wait_for('bind_master', 'bind_slave')
+    # ensure monitoring works
+  end
+
+  def test_web_monitoring
+    wait_for('web_server')
+    # ensure monitoring works
+  end
+
+  def test_db_monitoring
+    wait_for('db_server')
+    # ensure monitoring works
+  end
+
+  def teardown
+    %w[
+        bind_master 
+        bind_slave 
+        syslog_server 
+        web_server 
+        db_server 
+        nagios_server
+    ].each { |x| deprovision(x) }
+  end
+end
+```
+
+The flow of this test is as such:
+
+As soon as `bind_master` completes, `bind_slave`, `web_server`, `db_server`,
+and `nagios_server` will begin provisioning. `setup` will wait until
+`nagios_server` completes, and normal testing will begin. Each test waits for
+its testable unit to finish provisioning before running the actual tests
+against those units. With rare exception, after a test or two, the `wait_for`
+commands will succeed immediately, largely because they have been provsioning
+in the background while the other tests have been running.
 
 If you're curious how all this works under the hood, see the
 [chef-workflow](https://github.com/hoteltonight/chef-workflow) documentation on
