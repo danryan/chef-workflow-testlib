@@ -1,9 +1,19 @@
 # Chef Workflow - Test Libraries and Tooling
 
 This gem provides a set of libraries to drive
-[minitest](https://github.com/seattlerb/minitest) integration for spawning
-whole networks of machines, testing their converge successes, interop between
-machines and chef-server functionality.
+[minitest](https://github.com/seattlerb/minitest) integration for a number of things:
+
+1. spawning whole networks of machines
+2. testing their converge successes
+3. testing interoperability between machines
+4. testing advanced functionality in chef, like search.
+
+**It is not intended for testing individual cookbooks.** The default
+provisioning systems expect roles, for example, but it's a different tool for a
+different problem. If you want to verify your open-source cookbooks against a
+variety of environments, I strongly suggest you look at
+[test-kitchen](https://github.com/opscode/test-kitchen), which is intended to
+solve this problem.
 
 ## Installation
 
