@@ -38,7 +38,7 @@ class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
   # provision as a class method
   #
   def self.provision(role, number_of_servers=1, addl_dependencies=[])
-    provision_helper.provision(role, number_of_servers, @@dependencies.map(&:first) + addl_dependencies)
+    provision_helper.provision(role, number_of_servers, addl_dependencies)
     provision_helper.run
   end
 
