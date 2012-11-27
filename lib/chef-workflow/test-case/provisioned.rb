@@ -1,5 +1,7 @@
 require 'chef-workflow/support/knife'
-require 'minitest/unit'
+require 'chef-workflow/runner/provisioned'
+
+
 
 #
 # Basic provisioned test case. Generally not intended for direct use but
@@ -26,26 +28,42 @@ class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
   end
 
   #
-  # wait_for as a class method -- not entirely sure why this is here.
+  # wait_for as a class method
   #
   def self.wait_for(*deps)
-    @@provision_helper.wait_for(*deps)
+    provision_helper.wait_for(*deps)
   end
 
   #
-  # Constructor. Be sure in your subclasses to call this with `super`.
-  # Provisions machines configured as dependencies and starts the scheduler.
+  # provision as a class method
   #
-  def initialize(*args)
+  def self.provision(role, number_of_servers=1, addl_dependencies=[])
+    provision_helper.provision(role, number_of_servers, @@dependencies.map(&:first) + addl_dependencies)
+    provision_helper.run
+  end
+
+  #
+  # deprovision as a class method
+  #
+  def self.deprovision(role)
+    provision_helper.deprovision(role)
+  end
+
+  #
+  # Hook before the suite starts. Be sure in your subclasses to call this with
+  # `super`. Provisions machines configured as dependencies and starts the
+  # scheduler.
+  #
+  def self.before_suite
+    super
+
     Chef::Config.from_file(KnifeSupport.singleton.knife_config_path)
     
     @@dependencies.each do |group_name, number_of_servers, dependencies|
-      self.class.provision_helper.provision(group_name, number_of_servers, dependencies)
+      provision_helper.provision(group_name, number_of_servers, dependencies)
     end
 
-    self.class.provision_helper.run
-    
-    super
+    provision_helper.run
   end
 
   #
@@ -60,16 +78,15 @@ class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
   # Provision a server group. Takes a name, number of servers, and a list of
   # dependencies (server group names). Delegates to the provision helper.
   #
-  def provision(role, number_of_servers=1, addl_dependencies=[])
-    self.class.provision_helper.provision(role, number_of_servers, @@dependencies.map(&:first) + addl_dependencies)
-    self.class.provision_helper.run
+  def provision(*args)
+    self.class.provision(*args)
   end
 
   #
   # De-Provision a server group. Takes a name. Delegates to the provision
   # helper.
   #
-  def deprovision(role)
-    self.class.provision_helper.deprovision(role)
+  def deprovision(*args)
+    self.class.deprovision(*args)
   end
 end
