@@ -4,7 +4,8 @@ require 'chef-workflow/support/debug'
 require 'net/ssh'
 
 #
-# Helper for performing SSH on groups of servers. Intended to be mixed into test case classes.
+# Helper for performing SSH on groups of servers. Intended to be mixed into
+# test case classes.
 #
 module SSHHelper
   include KnifePluginSupport
@@ -28,10 +29,11 @@ module SSHHelper
   end
 
   #
-  # Run a command against a single IP. Makes heavy use of KnifeSupport to
-  # determine how to drive the command.
+  # takes a block which it uses inside of the open_channel block that Net::SSH
+  # uses. Intended to provide a consistent way of setting up Net::SSH  Makes
+  # heavy use of KnifeSupport to determine how to drive the command.
   #
-  def ssh_command(ip, command)
+  def configure_ssh_command(ip, command)
     command = "#{KnifeSupport.singleton.use_sudo ? 'sudo ': ''}#{command}"
 
     options = { }
@@ -46,21 +48,52 @@ module SSHHelper
         end
 
         ch.exec(command) do |ch, success|
-          return 1 unless success
-
-          if_debug(2) do
-            ch.on_data do |ch, data|
-              $stderr.puts data
-            end
-          end
-
-          ch.on_request("exit-status") do |ch, data|
-            return data.read_long
-          end
+          yield ch, success
         end
       end
 
       ssh.loop
     end
+  end
+
+  #
+  # Run a command against a single IP. Returns the exit status.
+  # 
+  #
+  def ssh_command(ip, command)
+    configure_ssh_command(ip, command) do |ch, success|
+      return 1 unless success
+
+      if_debug(2) do
+        ch.on_data do |ch, data|
+          $stderr.puts data
+        end
+      end
+
+      ch.on_request("exit-status") do |ch, data|
+        return data.read_long
+      end
+    end
+  end
+
+  #
+  # run a command, and instead of capturing the exit status, return the data
+  # captured during the command run.
+  #
+  def ssh_capture(ip, command)
+    retval = ""
+    configure_ssh_command(ip, command) do |ch, success|
+      return "" unless success
+
+      ch.on_data do |ch, data|
+        retval << data
+      end
+
+      ch.on_request("exit-status") do |ch, data|
+        return retval
+      end
+    end
+
+    return retval
   end
 end
