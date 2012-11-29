@@ -1,3 +1,4 @@
+require 'chef-workflow'
 require 'chef-workflow/helpers/minitest'
 require 'chef-workflow/test-case/vagrant'
 require 'minitest/unit'
