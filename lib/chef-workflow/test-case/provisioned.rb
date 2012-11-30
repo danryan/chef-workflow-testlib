@@ -10,6 +10,20 @@ require 'chef-workflow/runner/provisioned'
 #
 class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
   module ProvisionHelper
+
+    #
+    # This badness is used to work around a condition where the provision
+    # helper won't be available to this module in the instance case. The class
+    # case is overwritten shortly after this is delegated.
+    #
+    # Please see ProvisionedTestCase#provision_helper for more information.
+    #
+
+    def provision_helper
+      return provision_helper if kind_of?(Module)
+      return self.class.provision_helper
+    end
+
     #
     # wait for a provision. takes a list of server group names. delegates to the
     # provision helper.
@@ -56,17 +70,17 @@ class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
   @@dependencies = []
 
   #
-  # Sets the provision helper.
-  #
-  def self.provision_helper=(arg)
-    @@provision_helper = arg
-  end
-
-  #
   # Retrieves the provision helper.
   #
   def self.provision_helper
     @@provision_helper
+  end
+
+  #
+  # Sets the provision helper.
+  #
+  def self.provision_helper=(arg)
+    @@provision_helper = arg
   end
 
   #
