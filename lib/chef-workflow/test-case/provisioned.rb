@@ -10,20 +10,28 @@ require 'chef-workflow/runner/provisioned'
 #
 class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
   module ProvisionHelper
+    def inherited(klass)
+      unless klass.provision_helper
+        klass.provision_helper = self.provision_helper
+      end
 
-    #
-    # This badness is used to work around a condition where the provision
-    # helper won't be available to this module in the instance case. The class
-    # case is overwritten shortly after this is delegated.
-    #
-    # Please see ProvisionedTestCase#provision_helper for more information.
-    #
-
-    def provision_helper
-      return provision_helper if kind_of?(Module)
-      return self.class.provision_helper
+      MiniTest::Unit::TestCase.inherited(klass)
     end
 
+    #
+    # Retrieves the provision helper.
+    #
+    def provision_helper
+      @provision_helper || (self.class.provision_helper rescue nil)
+    end
+
+    #
+    # Sets the provision helper.
+    #
+    def provision_helper=(arg)
+      @provision_helper = arg
+    end
+    
     #
     # wait for a provision. takes a list of server group names. delegates to the
     # provision helper.
@@ -67,22 +75,6 @@ class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
   include ProvisionHelper
   extend ProvisionHelper
 
-  @@dependencies = []
-
-  #
-  # Retrieves the provision helper.
-  #
-  def self.provision_helper
-    @@provision_helper
-  end
-
-  #
-  # Sets the provision helper.
-  #
-  def self.provision_helper=(arg)
-    @@provision_helper = arg
-  end
-
   #
   # Hook before the suite starts. Be sure in your subclasses to call this with
   # `super`. Provisions machines configured as dependencies and starts the
@@ -92,11 +84,5 @@ class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
     super
 
     Chef::Config.from_file(KnifeSupport.singleton.knife_config_path)
-    
-    @@dependencies.each do |group_name, number_of_servers, dependencies|
-      provision_helper.provision(group_name, number_of_servers, dependencies)
-    end
-
-    provision_helper.run
   end
 end

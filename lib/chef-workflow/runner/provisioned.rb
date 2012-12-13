@@ -3,6 +3,10 @@ require 'minitest/unit'
 class MiniTest::Unit::TestCase
   def self.before_suite; end
   def self.after_suite; end
+  v = $VERBOSE
+  $VERBOSE = nil
+  const_set(:SUPPORTS_INFO_SIGNAL, nil)
+  $VERBOSE = v
 end
 
 class MiniTest::Unit::ProvisionedRunner < MiniTest::Unit
