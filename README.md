@@ -32,7 +32,7 @@ Or install it yourself as:
 ## Quick Start
 
 The easiest way to get started is to integrate
-[chef-workflow-tasklib](https://github.com/hoteltonight/chef-workflow-tasklib)
+[chef-workflow-tasklib](https://github.com/chef-workflow/chef-workflow-tasklib)
 into your environment. This has a number of benefits, such as working within
 the same system to control machine provisioning, building a chef server,
 uploading your repository to a chef server, several options for driving tests,
@@ -56,14 +56,14 @@ and deprovision the machines.
 ```ruby
 require 'chef-workflow/helper'
 class MyTest < MiniTest::Unit::VagrantTestCase
-  def setup
+  def self.before_suite
     provision('my_role')
     provision('my_other_role')
     wait_for('my_role')
     wait_for('my_other_role')
   end
 
-  def teardown
+  def self.after_suite
     deprovision('my_role')
     deprovision('my_other_role')
   end
@@ -90,12 +90,12 @@ more; something we're about to cover.
 Ok, so we got our test suite off the ground, and boy do those tests take a
 while to run. I have two bits of good news for you:
 
-EC2 support is coming, and a parallel provisioner has already been written to
-reduce provisioning time. Vagrant (actually VirtualBox) cannot be parallelized
-for a number of reasons. I expect EC2 support to be ready before the first
-release, so if you're seeing this, chances are I gave you the URL ahead of
-time or you found it on your own. So be nice. Additional provisioners should be
-moderately easy to write, but there is no guide on how to do so just yet.
+You aren't locked into using Vagrant, and while Vagrant has limitations which
+make it impossible to parallelize, machine provisions don't have to be serial.
+EC2 support allows you to provision many machines in parallel, which can
+improve run time. The provisioning system is also flexible enough to support
+other systems too, so if you'd like to see your favorite system get some love,
+the best way to do so is to file an issue or pull request.
 
 The second is that in most scenarios, you have a few servers that you don't
 really care about for this test, but need to be available for the machine to
@@ -107,19 +107,19 @@ rebuild your machines, you don't actually have to until you're ready to.
 ### State Management with MiniTest Subclasses
 
 Let's start off easy. Take our example above, and remove the deprovisioning
-lines in the `teardown` call:
+lines in the `after_suite` call:
 
 ```ruby
 require 'chef-workflow/helper'
 class MyTest < MiniTest::Unit::VagrantTestCase
-  def setup
+  def self.before_suite
     provision('my_role')
     provision('my_other_role')
     wait_for('my_role')
     wait_for('my_other_role')
   end
 
-  def teardown
+  def self.after_suite
     # omg, where did they go?
   end
 
@@ -155,14 +155,14 @@ subclass called 'WithInfra' in our test suite that looks like this:
 class MiniTest::Unit::VagrantTestCase::WithInfra < MiniTest::Unit::VagrantTestCase
   include SSHHelper
 
-  @@dependencies += [
-    ['bind_master', 1, []],
-    ['syslog_server', 1, []]
-  ]
-
-  def initialize(*args)
+  def self.before_suite
     super
+
+    provision('bind_master')
+    provision('syslog_server')
+
     wait_for('bind_master', 'syslog_server')
+
     ssh_role_command('bind_master', 'chef-client')
     ssh_role_command('syslog_server', 'chef-client')
   end
@@ -176,16 +176,6 @@ enough to walk past those dependencies in the first chef run, once they're both
 up converging them again will resolve each other and configure them
 appropriately.
 
-**The next bit I hope to make a little easier to use in the near future, but
-here's the gory details**:
-
-`@@dependencies` is a small structure which is intended to be appended to, and
-describes in each array a call to `provision`. Consequently, the role, number
-of servers to provision, and the servers it depends on (more on this later) are
-listed here. This is done in the `initialize` routine of the parent class,
-which we call immediately, then we wait for them to provision, then do a second
-chef-client run with our SSH tooling. 
-
 The good news is that we don't have to (but can) tear these servers down during
 a run or even between runs if they're not causing problems, and you can always
 check from a fresh provision by running the `chef:clean:machines` task before
@@ -197,7 +187,7 @@ An actual test suite that uses this looks like this:
 
 ```ruby
 class TestBIND < MiniTest::Unit::VagrantTestCase::WithInfra
-  def setup
+  def self.before_suite 
     provision('bind_slave', 1, %w[bind_master syslog_server])
     wait_for('bind_slave')
   end
@@ -207,7 +197,7 @@ class TestBIND < MiniTest::Unit::VagrantTestCase::WithInfra
     # could go here
   end
 
-  def teardown
+  def self.after_suite
     deprovision('bind_slave') 
   end
 end
@@ -229,7 +219,7 @@ use the `wait_for` method.
 We can see this in our example above:
 
 ```ruby
-  def setup
+  def self.before_suite 
     provision('bind_slave', 1, %w[bind_master syslog_server])
     wait_for('bind_slave')
   end
@@ -247,14 +237,14 @@ manage this problem yourself.
 You can't declare provisions that are dependent on provisions that don't exist
 -- this will raise an exception. So, don't worry about fat-fingering it. :)
 
-Here's a more advanced example that abuses the performance gains of the
-scheduler. In this instance, we instend to test our monitoring system, which
+Here's a more advanced example that abuses the performance characteristics of the
+scheduler. In this instance, we intend to test our monitoring system, which
 will assert the "alive" status of many servers. We provision numerous ones in
 the setup, and only wait for what we care about in each unit test.
 
 ```ruby
 class TestNagios < MiniTest::Unit::VagrantTestCase
-  def setup
+  def self.before_suite
     provision('syslog_server')
     provision('bind_master', 1, %w[syslog_server])
     # we just care about bind for all these
@@ -281,7 +271,7 @@ class TestNagios < MiniTest::Unit::VagrantTestCase
     # ensure monitoring works
   end
 
-  def teardown
+  def self.after_suite
     %w[
         bind_master 
         bind_slave 
@@ -305,7 +295,7 @@ commands will succeed immediately, largely because they have been provsioning
 in the background while the other tests have been running.
 
 If you're curious how all this works under the hood, see the
-[chef-workflow](https://github.com/hoteltonight/chef-workflow) documentation on
+[chef-workflow](https://github.com/chef-workflow/chef-workflow) documentation on
 the subject.
 
 ## Contributing
@@ -320,6 +310,7 @@ the subject.
 
 ## Authors
 
-This work is sponsored by [HotelTonight](http://hoteltonight.com), and you
-should check them out. We use this system for testing our infrastructure. The
-programming was done primarily by [Erik Hollensbe](https://github.com/erikh).
+This work was partially sponsored by [HotelTonight](http://hoteltonight.com),
+and you should check them out. They use this system for testing their
+infrastructure. The programming was done primarily by [Erik
+Hollensbe](https://github.com/erikh).
