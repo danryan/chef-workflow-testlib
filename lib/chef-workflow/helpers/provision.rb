@@ -1,4 +1,6 @@
+require 'chef-workflow/support/general'
 require 'chef-workflow/support/scheduler'
+require 'chef-workflow/support/vm/helpers/knife'
 
 $SCHEDULER ||= Scheduler.new
 
@@ -31,6 +33,13 @@ class ProvisionHelper
   end
 
   def provision(group_name, number_of_servers, dependencies)
-    raise "Please override this method"
+    schedule_provision(
+      group_name, 
+      [
+        GeneralSupport.singleton.machine_provisioner.new(group_name, number_of_servers), 
+        build_knife_provisioner
+      ], 
+      dependencies
+    )
   end
 end

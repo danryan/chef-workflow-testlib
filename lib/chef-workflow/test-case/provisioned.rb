@@ -1,5 +1,6 @@
 require 'chef-workflow/support/knife'
 require 'chef-workflow/runner/provisioned'
+require 'chef-workflow/helpers/ssh'
 
 #
 # Basic provisioned test case. Generally not intended for direct use but
@@ -9,6 +10,9 @@ require 'chef-workflow/runner/provisioned'
 # helper, which will be used for many methods this class provides.
 #
 class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
+  include SSHHelper
+  extend SSHHelper
+
   module ProvisionHelper
     def inherited(klass)
       unless klass.provision_helper
