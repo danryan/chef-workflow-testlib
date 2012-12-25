@@ -1,6 +1,7 @@
 require 'chef-workflow/support/knife'
 require 'chef-workflow/runner/provisioned'
 require 'chef-workflow/helpers/ssh'
+require 'chef-workflow/helpers/provision'
 
 #
 # Basic provisioned test case. Generally not intended for direct use but
@@ -78,6 +79,8 @@ class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
 
   include ProvisionHelper
   extend ProvisionHelper
+
+  self.provision_helper = ::ProvisionHelper.new # FIXME fix this crap
 
   #
   # Hook before the suite starts. Be sure in your subclasses to call this with

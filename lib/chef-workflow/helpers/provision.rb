@@ -12,6 +12,9 @@ $SCHEDULER ||= Scheduler.new
 # the scheduler.
 #
 class ProvisionHelper
+
+  include KnifeProvisionHelper
+
   def schedule_provision(*args)
     $SCHEDULER.schedule_provision(*args)
   end

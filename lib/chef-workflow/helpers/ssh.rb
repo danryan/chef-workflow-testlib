@@ -8,7 +8,6 @@ require 'net/ssh'
 # test case classes.
 #
 module SSHHelper
-  include KnifePluginSupport
   include DebugSupport
 
   #
