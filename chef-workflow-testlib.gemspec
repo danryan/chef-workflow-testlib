@@ -5,7 +5,7 @@ require 'chef-workflow-testlib/version'
 
 Gem::Specification.new do |gem|
   gem.name          = "chef-workflow-testlib"
-  gem.version       = Chef::Workflow::Testlib::VERSION
+  gem.version       = ChefWorkflow::Testlib::VERSION
   gem.authors       = ["Erik Hollensbe"]
   gem.email         = ["erik+github@hollensbe.org"]
   gem.description   = %q{Test helpers and assertions for chef-workflow}
