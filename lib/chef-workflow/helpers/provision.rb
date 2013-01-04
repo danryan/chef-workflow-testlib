@@ -40,7 +40,7 @@ module ChefWorkflow
       schedule_provision(
         group_name, 
         [
-          ChefWorkflow::GeneralSupport.singleton.machine_provisioner.new(group_name, number_of_servers), 
+          ChefWorkflow::GeneralSupport.machine_provisioner.new(group_name, number_of_servers), 
           build_knife_provisioner
         ], 
         dependencies
