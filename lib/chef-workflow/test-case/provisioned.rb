@@ -66,14 +66,14 @@ class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
     # Obtains the IP addresses for a given role as an array.
     #
     def get_role_ips(role)
-      ChefWorkflow::IPSupport.singleton.get_role_ips(role)
+      ChefWorkflow::IPSupport.get_role_ips(role)
     end
 
     #
     # Easy way to reference KnifeSupport for getting configuration data.
     #
     def knife_config
-      ChefWorkflow::KnifeSupport.singleton
+      ChefWorkflow::KnifeSupport
     end
   end
 
@@ -90,6 +90,6 @@ class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
   def self.before_suite
     super
 
-    Chef::Config.from_file(ChefWorkflow::KnifeSupport.singleton.knife_config_path)
+    Chef::Config.from_file(ChefWorkflow::KnifeSupport.knife_config_path)
   end
 end

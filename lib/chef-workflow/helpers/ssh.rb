@@ -18,7 +18,7 @@ module ChefWorkflow
     #
     def ssh_role_command(role, command)
       t = []
-      ChefWorkflow::IPSupport.singleton.get_role_ips(role).each do |ip|
+      ChefWorkflow::IPSupport.get_role_ips(role).each do |ip|
         t.push(
           Thread.new do
             ssh_command(ip, command)
@@ -34,14 +34,14 @@ module ChefWorkflow
     # heavy use of KnifeSupport to determine how to drive the command.
     #
     def configure_ssh_command(ip, command)
-      command = "#{ChefWorkflow::KnifeSupport.singleton.use_sudo ? 'sudo ': ''}#{command}"
+      command = "#{ChefWorkflow::KnifeSupport.use_sudo ? 'sudo ': ''}#{command}"
 
       options = { }
 
-      options[:password] = ChefWorkflow::KnifeSupport.singleton.ssh_password          if ChefWorkflow::KnifeSupport.singleton.ssh_password
-      options[:keys]     = [ChefWorkflow::KnifeSupport.singleton.ssh_identity_file]   if ChefWorkflow::KnifeSupport.singleton.ssh_identity_file
+      options[:password] = ChefWorkflow::KnifeSupport.ssh_password          if ChefWorkflow::KnifeSupport.ssh_password
+      options[:keys]     = [ChefWorkflow::KnifeSupport.ssh_identity_file]   if ChefWorkflow::KnifeSupport.ssh_identity_file
 
-      Net::SSH.start(ip, ChefWorkflow::KnifeSupport.singleton.ssh_user, options) do |ssh|
+      Net::SSH.start(ip, ChefWorkflow::KnifeSupport.ssh_user, options) do |ssh|
         ssh.open_channel do |ch|
           ch.on_open_failed do |ch, code, desc|
             raise "Connection Error to #{ip}: #{desc}"
