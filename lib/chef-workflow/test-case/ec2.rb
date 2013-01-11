@@ -12,12 +12,13 @@ require 'chef-workflow/helpers/ssh'
 #
 class EC2ProvisionHelper < ProvisionHelper
   def provision(group_name, number_of_servers=1, dependencies=[])
-    kp              = VM::KnifeProvisioner.new
-    kp.username     = KnifeSupport.singleton.ssh_user
-    kp.password     = KnifeSupport.singleton.ssh_password
-    kp.use_sudo     = KnifeSupport.singleton.use_sudo
-    kp.ssh_key      = KnifeSupport.singleton.ssh_identity_file
-    kp.environment  = KnifeSupport.singleton.test_environment
+    kp               = VM::KnifeProvisioner.new
+    kp.username      = KnifeSupport.singleton.ssh_user
+    kp.password      = KnifeSupport.singleton.ssh_password
+    kp.use_sudo      = KnifeSupport.singleton.use_sudo
+    kp.ssh_key       = KnifeSupport.singleton.ssh_identity_file
+    kp.environment   = KnifeSupport.singleton.test_environment
+    kp.template_file = KnifeSupport.singleton.template_file
 
     schedule_provision(
       group_name, 
