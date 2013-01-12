@@ -5,6 +5,7 @@ require 'tempfile'
 require 'chef-workflow/test-case/provisioned'
 require 'chef-workflow/helpers/provision'
 require 'chef-workflow/helpers/ssh'
+require 'chef-workflow/helpers/vagrant_ssh'
 
 #
 # Subclass of ProvisionHelper, centered around Vagrant. Pulls some
@@ -39,7 +40,9 @@ end
 #
 class MiniTest::Unit::VagrantTestCase < MiniTest::Unit::ProvisionedTestCase
   include SSHHelper
+  include VagrantSSHHelper
   extend SSHHelper
+  extend VagrantSSHHelper
 
   self.provision_helper = VagrantProvisionHelper.new
 end
