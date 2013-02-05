@@ -1,6 +1,6 @@
 require 'chef-workflow/support/knife'
+require 'chef-workflow/support/ssh'
 require 'chef-workflow/runner/provisioned'
-require 'chef-workflow/helpers/ssh'
 require 'chef-workflow/helpers/provision'
 
 #
