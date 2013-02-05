@@ -19,7 +19,6 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency 'chef-workflow', '~> 0.1.0'
   gem.add_dependency 'minitest', '~> 4.3.0'
-  gem.add_dependency 'net-ssh', '~> 2.2.2'
 
   gem.add_development_dependency 'rdoc'
   gem.add_development_dependency 'rake'
