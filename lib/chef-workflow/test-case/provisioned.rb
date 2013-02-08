@@ -1,5 +1,7 @@
 require 'chef-workflow/support/knife'
+require 'chef-workflow/support/ssh'
 require 'chef-workflow/runner/provisioned'
+require 'chef-workflow/helpers/provision'
 
 #
 # Basic provisioned test case. Generally not intended for direct use but
@@ -9,6 +11,9 @@ require 'chef-workflow/runner/provisioned'
 # helper, which will be used for many methods this class provides.
 #
 class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
+  include ChefWorkflow::SSHHelper
+  extend ChefWorkflow::SSHHelper
+
   module ProvisionHelper
     def inherited(klass)
       unless klass.provision_helper
@@ -61,19 +66,21 @@ class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
     # Obtains the IP addresses for a given role as an array.
     #
     def get_role_ips(role)
-      IPSupport.singleton.get_role_ips(role)
+      ChefWorkflow::IPSupport.get_role_ips(role)
     end
 
     #
     # Easy way to reference KnifeSupport for getting configuration data.
     #
     def knife_config
-      KnifeSupport.singleton
+      ChefWorkflow::KnifeSupport
     end
   end
 
   include ProvisionHelper
   extend ProvisionHelper
+
+  self.provision_helper = ChefWorkflow::ProvisionHelper.new # FIXME fix this crap
 
   #
   # Hook before the suite starts. Be sure in your subclasses to call this with
@@ -83,6 +90,6 @@ class MiniTest::Unit::ProvisionedTestCase < MiniTest::Unit::TestCase
   def self.before_suite
     super
 
-    Chef::Config.from_file(KnifeSupport.singleton.knife_config_path)
+    Chef::Config.from_file(ChefWorkflow::KnifeSupport.knife_config_path)
   end
 end

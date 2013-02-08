@@ -5,7 +5,7 @@ require 'chef-workflow-testlib/version'
 
 Gem::Specification.new do |gem|
   gem.name          = "chef-workflow-testlib"
-  gem.version       = Chef::Workflow::Testlib::VERSION
+  gem.version       = ChefWorkflow::Testlib::VERSION
   gem.authors       = ["Erik Hollensbe"]
   gem.email         = ["erik+github@hollensbe.org"]
   gem.description   = %q{Test helpers and assertions for chef-workflow}
@@ -19,7 +19,6 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency 'chef-workflow', '~> 0.1.0'
   gem.add_dependency 'minitest', '~> 4.3.0'
-  gem.add_dependency 'net-ssh', '~> 2.6'
 
   gem.add_development_dependency 'rdoc'
   gem.add_development_dependency 'rake'

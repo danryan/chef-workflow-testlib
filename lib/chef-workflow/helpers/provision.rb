@@ -1,36 +1,50 @@
+require 'chef-workflow/support/general'
 require 'chef-workflow/support/scheduler'
+require 'chef-workflow/support/vm/helpers/knife'
 
-$SCHEDULER ||= Scheduler.new
+$SCHEDULER ||= ChefWorkflow::Scheduler.new
 
-#
-# Helper for provisioning. Intended to be instanced and assigned to the
-# provision_helper attribute of a ProvisionedTestCase.
-#
-# All methods except `provision`, which is shorthand, are passed directly to
-# the scheduler.
-#
-class ProvisionHelper
-  def schedule_provision(*args)
-    $SCHEDULER.schedule_provision(*args)
-  end
+module ChefWorkflow
+  #
+  # Helper for provisioning. Intended to be instanced and assigned to the
+  # provision_helper attribute of a ProvisionedTestCase.
+  #
+  # All methods except `provision`, which is shorthand, are passed directly to
+  # the scheduler.
+  #
+  class ProvisionHelper
 
-  def deprovision(group_name)
-    $SCHEDULER.deprovision_group(group_name)
-  end
-  
-  def wait_for(*args)
-    $SCHEDULER.wait_for(*args)
-  end
+    include ChefWorkflow::KnifeProvisionHelper
 
-  def serial=(arg)
-    $SCHEDULER.serial = arg
-  end
+    def schedule_provision(*args)
+      $SCHEDULER.schedule_provision(*args)
+    end
 
-  def run
-    $SCHEDULER.run
-  end
+    def deprovision(group_name)
+      $SCHEDULER.deprovision_group(group_name)
+    end
+    
+    def wait_for(*args)
+      $SCHEDULER.wait_for(*args)
+    end
 
-  def provision(group_name, number_of_servers, dependencies)
-    raise "Please override this method"
+    def serial=(arg)
+      $SCHEDULER.serial = arg
+    end
+
+    def run
+      $SCHEDULER.run
+    end
+
+    def provision(group_name, number_of_servers, dependencies)
+      schedule_provision(
+        group_name, 
+        [
+          ChefWorkflow::GeneralSupport.machine_provisioner.new(group_name, number_of_servers), 
+          build_knife_provisioner
+        ], 
+        dependencies
+      )
+    end
   end
 end

@@ -5,7 +5,7 @@ require 'minitest/unit'
 # Small assertion library for minitest to assist with remote chef tests.
 #
 module MiniTest::Assertions::RemoteChef
-  include ChefHelper
+  include ChefWorkflow::ChefHelper
 
   #
   # Assert that a search included the node names.
